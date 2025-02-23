@@ -8,8 +8,8 @@ import (
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
     "golang.org/x/crypto/bcrypt"
-    "task-management/internal/database"
-    "task-management/internal/middleware"
+    "backend-trackit/database"
+    "backend-trackit/middleware"
 )
 
 type User struct {

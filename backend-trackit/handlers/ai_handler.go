@@ -6,7 +6,7 @@ import (
     "os"
     "time"
     "github.com/gin-gonic/gin"
-    "task-management/internal/services"
+    "backend-trackit/services"
 )
 
 type AIRequest struct {

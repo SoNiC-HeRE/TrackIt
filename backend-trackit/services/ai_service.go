@@ -7,7 +7,7 @@ import (
     "fmt"
     "log"
     "net/http"
-    "task-management/internal/models"
+    "backend-trackit/models"
 )
 
 type AIService struct {

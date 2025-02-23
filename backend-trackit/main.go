@@ -7,9 +7,9 @@ import (
     "os"
     "github.com/gin-gonic/gin"
     "github.com/joho/godotenv"
-    "task-management/internal/handlers"
-    "task-management/internal/middleware"
-    "task-management/internal/database"
+    "backend-trackit/handlers"
+    "backend-trackit/middleware"
+    "backend-trackit/database"
 )
 
 func main() {

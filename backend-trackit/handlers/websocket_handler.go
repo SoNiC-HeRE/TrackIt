@@ -8,7 +8,7 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/gorilla/websocket"
     "github.com/golang-jwt/jwt/v4"
-    "task-management/internal/services"
+    "backend-trackit/services"
 )
 
 var upgrader = websocket.Upgrader{

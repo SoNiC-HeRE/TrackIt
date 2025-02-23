@@ -8,9 +8,9 @@ import (
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/bson/primitive"
-    "task-management/internal/models"
-    "task-management/internal/database"
-    "task-management/internal/services"
+    "backend-trackit/models"
+    "backend-trackit/database"
+    "backend-trackit/services"
 )
 
 func CreateTask(c *gin.Context) {
