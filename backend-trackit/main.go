@@ -1,73 +1,85 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "os"
-    "github.com/gin-gonic/gin"
-    "github.com/joho/godotenv"
-    "backend-trackit/handlers"
-    "backend-trackit/middleware"
-    "backend-trackit/database"
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"backend-trackit/config"
+	"backend-trackit/database"
+	"backend-trackit/middleware"
+	"backend-trackit/routes"
 )
 
 func main() {
-    // Load .env in development
-    if os.Getenv("GO_ENV") != "production" {
-        if err := godotenv.Load(); err != nil {
-            log.Println("Warning: .env file not found")
-        }
-    }
+	// Load environment variables
+	config.LoadEnv()
 
-    // Initialize database
-    database.InitDatabase()
+	// Initialize database connection
+	database.InitDatabase()
 
-    // Initialize Gin
-    r := gin.Default()
-    
-    // Add middleware
-    r.Use(middleware.CORSMiddleware())
+	// Initialize Gin Router
+	r := gin.Default()
 
-    // Routes
-    api := r.Group("/api")
-    {
-        api.POST("/register", handlers.Register)
-        api.POST("/login", handlers.Login)
-        api.POST("/logout", handlers.Logout)
-        api.GET("/me", handlers.GetMe)
-        api.GET("/tasks", handlers.GetTasks)
-        api.POST("/tasks", handlers.CreateTask)
-        api.PUT("/tasks/:id", handlers.UpdateTask)
-        api.DELETE("/tasks/:id", handlers.DeleteTask)
-        api.POST("/ai/suggestions", handlers.GetAISuggestions)
-    }
+	// Apply middleware
+	r.Use(middleware.CORSMiddleware())
 
-    // Health check endpoint
-    r.GET("/", func(c *gin.Context) {
-        c.JSON(200, gin.H{
-            "status": "healthy",
-            "message": "Server is running",
-        })
-    })
+	// Setup API routes
+	routes.RegisterRoutes(r)
 
-    // Get port from environment variable
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "10000" // Render's default port
-    }
+	// Health check endpoint
+	r.GET("/", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"status":  "healthy",
+			"message": "Server is running",
+		})
+	})
 
-    // Create server with explicit host and port binding
-    server := &http.Server{
-        Addr:    fmt.Sprintf("0.0.0.0:%s", port),
-        Handler: r,
-    }
+	// Start server with graceful shutdown handling
+	startServer(r)
+}
 
-    // Log server start
-    log.Printf("Server starting on http://0.0.0.0:%s", port)
+// startServer initializes and starts the HTTP server with graceful shutdown
+func startServer(router *gin.Engine) {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "10000" // Default port
+	}
 
-    // Start server
-    if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-        log.Fatal("Error starting server:", err)
-    }
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%s", port),
+		Handler: router,
+	}
+
+	// Channel to listen for termination signals
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	// Start server in a goroutine
+	go func() {
+		log.Printf("Server started on http://localhost:%s", port)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	// Wait for termination signal
+	<-quit
+	log.Println("Shutting down server...")
+
+	// Gracefully shutdown the server
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server exited gracefully")
 }
