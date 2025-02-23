@@ -1,33 +1,73 @@
 package main
 
 import (
+    "fmt"
     "log"
     "net/http"
     "os"
     "github.com/gin-gonic/gin"
+    "github.com/joho/godotenv"
+    "task-management/internal/handlers"
+    "task-management/internal/middleware"
+    "task-management/internal/database"
 )
 
 func main() {
-    // Initialize Gin router
+    // Load .env in development
+    if os.Getenv("GO_ENV") != "production" {
+        if err := godotenv.Load(); err != nil {
+            log.Println("Warning: .env file not found")
+        }
+    }
+
+    // Initialize database
+    database.InitDatabase()
+
+    // Initialize Gin
     r := gin.Default()
+    
+    // Add middleware
+    r.Use(middleware.CORSMiddleware())
+
+    // Routes
+    api := r.Group("/api")
+    {
+        api.POST("/register", handlers.Register)
+        api.POST("/login", handlers.Login)
+        api.POST("/logout", handlers.Logout)
+        api.GET("/me", handlers.GetMe)
+        api.GET("/tasks", handlers.GetTasks)
+        api.POST("/tasks", handlers.CreateTask)
+        api.PUT("/tasks/:id", handlers.UpdateTask)
+        api.DELETE("/tasks/:id", handlers.DeleteTask)
+        api.POST("/ai/suggestions", handlers.GetAISuggestions)
+    }
 
     // Health check endpoint
     r.GET("/", func(c *gin.Context) {
-        c.JSON(http.StatusOK, gin.H{
-            "status":  "healthy",
+        c.JSON(200, gin.H{
+            "status": "healthy",
             "message": "Server is running",
         })
     })
 
-    // Get port from environment variable (default: 10000)
+    // Get port from environment variable
     port := os.Getenv("PORT")
     if port == "" {
-        port = "10000"
+        port = "10000" // Render's default port
     }
 
+    // Create server with explicit host and port binding
+    server := &http.Server{
+        Addr:    fmt.Sprintf("0.0.0.0:%s", port),
+        Handler: r,
+    }
+
+    // Log server start
+    log.Printf("Server starting on http://0.0.0.0:%s", port)
+
     // Start server
-    log.Printf("Server starting on port %s...", port)
-    if err := r.Run(":" + port); err != nil {
+    if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
         log.Fatal("Error starting server:", err)
     }
 }
