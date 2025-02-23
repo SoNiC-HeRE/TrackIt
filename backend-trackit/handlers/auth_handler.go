@@ -4,6 +4,7 @@ import (
     "context"
     "log"
     "time"
+    "strings"
     "fmt"
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/bson"
@@ -155,8 +156,29 @@ func GetMe(c *gin.Context) {
 
 // Logout handles user logout
 func Logout(c *gin.Context) {
+    authHeader := c.GetHeader("Authorization")
+    if authHeader == "" {
+        c.JSON(401, gin.H{"error": "Authorization header required"})
+        return
+    }
+
+    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+    if tokenString == "" {
+        c.JSON(401, gin.H{"error": "Invalid token format"})
+        return
+    }
+
+    _, err := middleware.ValidateToken(tokenString)
+    if err != nil {
+        c.JSON(401, gin.H{"error": "Invalid token"})
+        return
+    }
+
+    // Usually, JWTs are stateless, so we don't "destroy" them on the server.
+    // Instead, we ask the client to discard the token.
     c.JSON(200, gin.H{"message": "Logged out successfully"})
 }
+
 
 // userExists checks if a user with the given email already exists
 func userExists(ctx context.Context, collection *mongo.Collection, email string) bool {

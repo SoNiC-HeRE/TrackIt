@@ -1,4 +1,3 @@
-
 package services
 
 import (
@@ -32,11 +31,16 @@ type OpenAIResponse struct {
     Created int64  `json:"created"`
     Model   string `json:"model"`
     Choices []struct {
-        Message struct {
-            Role    string `json:"role"`
-            Content string `json:"content"`
-        } `json:"message"`
+        Message Message `json:"message"`
     } `json:"choices"`
+}
+
+type OpenAIErrorResponse struct {
+    Error struct {
+        Message string `json:"message"`
+        Type    string `json:"type"`
+        Code    string `json:"code"`
+    } `json:"error"`
 }
 
 func NewAIService(apiKey string) (*AIService, error) {
@@ -54,23 +58,20 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
         Model: "gpt-4o-mini",
         Store: true,
         Messages: []Message{
-            {
-                Role:    "user",
-                Content: prompt,
-            },
+            {Role: "user", Content: prompt},
         },
     }
 
     jsonData, err := json.Marshal(request)
     if err != nil {
-        return "", fmt.Errorf("error marshaling request: %v", err)
+        return "", fmt.Errorf("error marshaling request: %w", err)
     }
 
     log.Printf("Sending request to OpenAI: %s", string(jsonData))
 
     req, err := http.NewRequest("POST", s.baseURL, bytes.NewBuffer(jsonData))
     if err != nil {
-        return "", fmt.Errorf("error creating request: %v", err)
+        return "", fmt.Errorf("error creating request: %w", err)
     }
 
     req.Header.Set("Content-Type", "application/json")
@@ -79,19 +80,12 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-        return "", fmt.Errorf("error making request: %v", err)
+        return "", fmt.Errorf("error making request: %w", err)
     }
     defer resp.Body.Close()
 
     if resp.StatusCode != http.StatusOK {
-        
-        var errorResponse struct {
-            Error struct {
-                Message string `json:"message"`
-                Type    string `json:"type"`
-                Code    string `json:"code"`
-            } `json:"error"`
-        }
+        var errorResponse OpenAIErrorResponse
         if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
             return "", fmt.Errorf("OpenAI API error, status code: %d", resp.StatusCode)
         }
@@ -100,7 +94,7 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
 
     var response OpenAIResponse
     if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-        return "", fmt.Errorf("error decoding response: %v", err)
+        return "", fmt.Errorf("error decoding response: %w", err)
     }
 
     if len(response.Choices) == 0 {

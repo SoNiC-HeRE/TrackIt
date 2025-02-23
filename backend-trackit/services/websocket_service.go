@@ -1,4 +1,3 @@
-
 package services
 
 import (
@@ -53,7 +52,7 @@ func (h *Hub) Run() {
 
         case client := <-h.Unregister:
             h.mutex.Lock()
-            if _, ok := h.Clients[client]; ok {
+            if _, exists := h.Clients[client]; exists {
                 delete(h.Clients, client)
                 close(client.Send)
             }
@@ -92,23 +91,20 @@ func (c *Client) ReadPump() {
         _, message, err := c.Conn.ReadMessage()
         if err != nil {
             if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-                log.Printf("error: %v", err)
+                log.Printf("Error: %v", err)
             }
             break
         }
         
-       
         var msg map[string]interface{}
         if err := json.Unmarshal(message, &msg); err != nil {
             log.Printf("Error parsing message: %v", err)
             continue
         }
 
-        
-        if msgType, ok := msg["type"].(string); ok {
+        if msgType, exists := msg["type"].(string); exists {
             switch msgType {
             case "ping":
-                
                 c.Send <- []byte(`{"type": "pong"}`)
             default:
                 log.Printf("Received message of type %s from client %s", msgType, c.ID)
@@ -138,10 +134,7 @@ func (c *Client) WritePump() {
                 return
             }
             w.Write(message)
-
-            if err := w.Close(); err != nil {
-                return
-            }
+            w.Close()
 
         case <-ticker.C:
             c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
@@ -156,7 +149,7 @@ func BroadcastMessage(messageType string, data interface{}) {
     message := map[string]interface{}{
         "type":      messageType,
         "data":      data,
-        "timestamp": time.Now(),
+        "timestamp": time.Now().Format(time.RFC3339),
     }
 
     jsonMessage, err := json.Marshal(message)

@@ -1,4 +1,3 @@
-
 package middleware
 
 import (
@@ -6,8 +5,9 @@ import (
     "os"
     "strings"
     "time"
+
     "github.com/gin-gonic/gin"
-    "github.com/golang-jwt/jwt"
+    "github.com/golang-jwt/jwt/v4"
 )
 
 type Claims struct {
@@ -17,16 +17,16 @@ type Claims struct {
 
 func CORSMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+        headers := c.Writer.Header()
+        headers.Set("Access-Control-Allow-Origin", "*")
+        headers.Set("Access-Control-Allow-Credentials", "true")
+        headers.Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        headers.Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 
         if c.Request.Method == "OPTIONS" {
             c.AbortWithStatus(204)
             return
         }
-
         c.Next()
     }
 }
@@ -40,7 +40,7 @@ func GenerateToken(userId string) (string, error) {
     claims := Claims{
         UserId: userId,
         StandardClaims: jwt.StandardClaims{
-            ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+            ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
             IssuedAt:  time.Now().Unix(),
         },
     }
@@ -60,7 +60,12 @@ func ValidateToken(tokenString string) (*Claims, error) {
         return []byte(secret), nil
     })
 
-    if err != nil || !token.Valid {
+    if err != nil {
+        fmt.Println("Token validation error:", err) // Debugging line
+        return nil, fmt.Errorf("invalid token: %v", err)
+    }
+    
+    if !token.Valid {
         return nil, fmt.Errorf("invalid token")
     }
 
