@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/trackit
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+      - PORT=8080
+    depends_on:
+      - mongodb
+    networks:
+      - taskai-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      
+    depends_on:
+      - backend
+    networks:
+      - taskai-network
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - taskai-network
+
+networks:
+  taskai-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
