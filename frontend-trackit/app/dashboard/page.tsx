@@ -228,10 +228,6 @@ export default function Dashboard() {
                     </div>
                 </motion.div>
 
-
-                <AIChat />
-
-
                 <AnimatePresence>
                     {isCreateModalOpen && (
                         <CreateTaskModal

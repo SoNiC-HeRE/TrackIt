@@ -24,7 +24,7 @@ const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }: {
   onDeleteTask: (taskId: string) => void
 }) => {
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex gap-4 overflow-x-auto pb-4 min-h-[32rem]">
       {statuses.map((status) => {
         const statusTasks = tasks.filter(task => task.status === status)
         return (
