@@ -48,8 +48,9 @@ Follow the instructions below to configure and run TrackIt on your local machine
 ### Cloning the Repository
 
 ```bash
-git clone 
-cd task-management-system
+git clone '
+https://github.com/SoNiC-HeRE/TrackIt' 
+cd TrackIt             
 ```
 
 ---
@@ -59,7 +60,7 @@ cd task-management-system
 1. Navigate to the backend directory:
 
 ```bash
-cd backend
+cd backend-trackit
 ```
 
 2. Duplicate the sample environment file:
@@ -98,7 +99,7 @@ go run main.go
 1. Move to the frontend directory:
 
 ```bash
-cd frontend
+cd frontend-trackit
 ```
 
 2. Install necessary dependencies:
