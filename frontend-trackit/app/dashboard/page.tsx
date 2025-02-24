@@ -107,8 +107,9 @@ export default function Dashboard() {
     const fetchTasks = async () => {
         try {
             setIsLoading(true);
-            const fetchedTasks = await taskApi.getTasks();
-            setTasks(fetchedTasks || []);
+            const response = await taskApi.getTasks();
+            console.log("API Response:", response); // Debug log
+            setTasks(Array.isArray(response?.tasks) ? response.tasks : []); 
         } catch (error) {
             console.error('Error fetching tasks:', error);
             toast.error('Failed to fetch tasks');
@@ -117,6 +118,8 @@ export default function Dashboard() {
             setIsLoading(false);
         }
     };
+
+  
 
     const handleCreateTask = async (taskData: Partial<Task>) => {
         try {

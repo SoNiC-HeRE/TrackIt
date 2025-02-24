@@ -95,14 +95,14 @@ func DeleteTask(c *gin.Context) {
 
 // Insert a task into the database
 func insertTask(task models.Task) error {
-    collection := database.Client.Database("taskmanagement").Collection("tasks")
+    collection := database.Client.Database("data_trackit").Collection("tasks")
     _, err := collection.InsertOne(context.Background(), task)
     return err
 }
 
 // Fetch tasks for a user
 func fetchUserTasks(userID primitive.ObjectID) ([]models.Task, error) {
-    collection := database.Client.Database("taskmanagement").Collection("tasks")
+    collection := database.Client.Database("data_trackit").Collection("tasks")
     cursor, err := collection.Find(context.Background(), bson.M{
         "$or": []bson.M{
             {"created_by": userID},
@@ -122,7 +122,7 @@ func fetchUserTasks(userID primitive.ObjectID) ([]models.Task, error) {
 
 // Update a task in the database
 func updateTask(taskID primitive.ObjectID, updateData models.Task) (int64, error) {
-    collection := database.Client.Database("taskmanagement").Collection("tasks")
+    collection := database.Client.Database("data_trackit").Collection("tasks")
     result, err := collection.UpdateOne(
         context.Background(),
         bson.M{"_id": taskID},
@@ -133,7 +133,7 @@ func updateTask(taskID primitive.ObjectID, updateData models.Task) (int64, error
 
 // Delete a task from the database
 func deleteTask(taskID, userID primitive.ObjectID) (int64, error) {
-    collection := database.Client.Database("taskmanagement").Collection("tasks")
+    collection := database.Client.Database("data_trackit").Collection("tasks")
     result, err := collection.DeleteOne(context.Background(), bson.M{
         "_id":        taskID,
         "created_by": userID,
@@ -155,7 +155,7 @@ func generateAISuggestions(task models.Task) {
         return
     }
 
-    suggCollection := database.Client.Database("taskmanagement").Collection("ai_suggestions")
+    suggCollection := database.Client.Database("data_trackit").Collection("ai_suggestions")
     _, err = suggCollection.InsertOne(context.Background(), models.AITaskSuggestion{
         TaskID:      task.ID,
         Suggestion:  suggestions,
