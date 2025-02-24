@@ -13,7 +13,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - taskai-network
+      - trackit-network
 
   frontend:
     build:
@@ -27,7 +27,7 @@ services:
     depends_on:
       - backend
     networks:
-      - taskai-network
+      - trackit-network
 
   mongodb:
     image: mongo:latest
@@ -36,10 +36,10 @@ services:
     volumes:
       - mongodb_data:/data/db
     networks:
-      - taskai-network
+      - trackit-network
 
 networks:
-  taskai-network:
+  trackit-network:
     driver: bridge
 
 volumes:

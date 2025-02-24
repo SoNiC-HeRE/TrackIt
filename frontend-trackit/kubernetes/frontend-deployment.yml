@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trackit-frontend
+  labels:
+    app: trackit-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: trackit-frontend
+  template:
+    metadata:
+      labels:
+        app: trackit-frontend
+    spec:
+      containers:
+      - name: trackit-frontend
+        image: your-docker-username/trackit-frontend:latest
+        ports:
+        - containerPort: 3000
+          protocol: TCP
+        env:
+        - name: NEXT_PUBLIC_API_URL
+          value: "http://trackit-backend/api"
+        - name: NEXT_PUBLIC_WS_URL
+          value: "ws://trackit-backend/api/ws"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
