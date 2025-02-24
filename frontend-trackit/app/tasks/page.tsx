@@ -17,7 +17,7 @@ import CreateTaskModal from '@/components/CreateTaskModal';
 import Sidebar from '@/components/SideBar';
 
 export default function TasksPage() {
-    const { user, isLoading: isAuthLoading } = useAuth();
+    const { logout, user, isLoading: isAuthLoading } = useAuth();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -36,23 +36,23 @@ export default function TasksPage() {
 
     useEffect(() => {
         if (!tasks) return;
-        
+
         let filtered = [...tasks];
 
-        
+
         if (filters.status !== 'all') {
             filtered = filtered.filter(task => task.status === filters.status);
         }
 
-        
+
         if (filters.priority !== 'all') {
             filtered = filtered.filter(task => task.priority === filters.priority);
         }
 
-        
+
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(task => 
+            filtered = filtered.filter(task =>
                 task.title.toLowerCase().includes(query) ||
                 task.description.toLowerCase().includes(query)
             );
@@ -129,31 +129,9 @@ export default function TasksPage() {
                     <div className="flex justify-between items-center mb-8">
                         <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
                         <div className='flex flex-col items-center gap-4'>
-                        <span><button
-                                className="bg-white text-center w-36 rounded-2xl h-14 relative text-black text-xl font-semibold group"
-                                type="button"
-                            >
-                                <div
-                                    className="bg-red-500 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-0 top-[4px] group-hover:w-[144px] z-10 duration-500"
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 1024 1024"
-                                        height="25px"
-                                        width="25px"
-                                    >
-                                        <path
-                                            d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
-                                            fill="#000000"
-                                        ></path>
-                                        <path
-                                            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
-                                            fill="#000000"
-                                        ></path>
-                                    </svg>
-                                </div>
-                                <p className="translate-x-2">Logout</p>
-                            </button></span>
+                            <button className="rounded-lg px-11 py-2 cursor-pointer flex items-center fill-red-400 bg-red-700 hover:bg-red-900 active:border active:border-red-400 rounded-md duration-100 p-2" onClick={logout}>
+                                <span className="text-lg text-white pr-1">Logout</span>
+                            </button>
                             <button
                                 onClick={() => setIsCreateModalOpen(true)}
                                 className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
@@ -161,11 +139,11 @@ export default function TasksPage() {
                                 <PlusIcon className="h-5 w-5" />
                                 <span>Create Task</span>
 
-                            </button>                            
+                            </button>
                         </div>
                     </div>
 
-                  
+
                     <div className="bg-white rounded-lg shadow p-4 mb-6">
                         <div className="flex flex-col md:flex-row gap-4">
                             <div className="flex-1 relative">
@@ -203,7 +181,7 @@ export default function TasksPage() {
                         </div>
                     </div>
 
-                 
+
                     {isLoading ? (
                         <div className="flex justify-center items-center h-64">
                             <LoadingSpinner size="large" />
@@ -232,7 +210,7 @@ export default function TasksPage() {
                     )}
                 </div>
 
-               
+
                 <CreateTaskModal
                     isOpen={isCreateModalOpen}
                     onClose={() => setIsCreateModalOpen(false)}

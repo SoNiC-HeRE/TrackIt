@@ -12,6 +12,12 @@ const statusLabels = {
   completed: 'Completed'
 }
 
+const statusColors = {
+  todo: 'bg-blue-100',
+  in_progress: 'bg-yellow-100',
+  completed: 'bg-green-100'
+}
+
 const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }: {
   tasks: Task[]
   onUpdateTask: (taskId: string, updates: Partial<Task>) => void
@@ -24,7 +30,7 @@ const KanbanBoard = ({ tasks, onUpdateTask, onDeleteTask }: {
         return (
           <div 
             key={status}
-            className="flex-1 min-w-[300px] bg-gray-50 rounded-lg p-4"
+            className={`flex-1 min-w-[300px] rounded-lg p-4 ${statusColors[status]}`}
           >
             <h3 className="font-semibold text-lg mb-4 text-gray-700">
               {statusLabels[status]} ({statusTasks.length})
