@@ -35,9 +35,6 @@ func CreateTask(c *gin.Context) {
         respondWithError(c, 500, "Failed to create task", err)
         return
     }
-
-    generateAISuggestions(task)
-
     c.JSON(201, gin.H{"message": "Task created successfully", "task": task})
 }
 

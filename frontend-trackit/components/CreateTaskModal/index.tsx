@@ -36,7 +36,6 @@ export default function CreateTaskModal({
             await onCreateTask(taskData);
             resetForm();
             onClose();
-            toast.success('Task created successfully');
         } catch (error) {
             console.error('Error creating task:', error);
             toast.error('Failed to create task');

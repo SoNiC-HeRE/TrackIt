@@ -11,11 +11,7 @@ import { Task } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import {
-    ChartBarIcon,
-    ClockIcon,
-    CheckCircleIcon,
     PlusIcon,
-    ChartPieIcon,
     ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/LoadingSpinner';

@@ -4,6 +4,7 @@ import (
     "bytes"
     "encoding/json"
     "fmt"
+    "io"
     "log"
     "net/http"
     "backend-trackit/models"
@@ -17,7 +18,8 @@ type AIService struct {
 type OpenAIRequest struct {
     Model    string    `json:"model"`
     Messages []Message `json:"messages"`
-    Store    bool      `json:"store"`
+    Temperature float32 `json:"temperature,omitempty"`
+    MaxTokens  int     `json:"max_tokens,omitempty"`
 }
 
 type Message struct {
@@ -26,10 +28,6 @@ type Message struct {
 }
 
 type OpenAIResponse struct {
-    ID      string `json:"id"`
-    Object  string `json:"object"`
-    Created int64  `json:"created"`
-    Model   string `json:"model"`
     Choices []struct {
         Message Message `json:"message"`
     } `json:"choices"`
@@ -38,28 +36,28 @@ type OpenAIResponse struct {
 type OpenAIErrorResponse struct {
     Error struct {
         Message string `json:"message"`
-        Type    string `json:"type"`
-        Code    string `json:"code"`
+        Code    int    `json:"code"`
     } `json:"error"`
 }
 
 func NewAIService(apiKey string) (*AIService, error) {
     if apiKey == "" {
-        return nil, fmt.Errorf("OpenAI API key is not set")
+        return nil, fmt.Errorf("OpenRouter API key is not set")
     }
     return &AIService{
         apiKey:  apiKey,
-        baseURL: "https://api.openai.com/v1/chat/completions",
+        baseURL: "https://openrouter.ai/api/v1/chat/completions",
     }, nil
 }
 
 func (s *AIService) GenerateResponse(prompt string) (string, error) {
     request := OpenAIRequest{
-        Model: "gpt-4o-mini",
-        Store: true,
+        Model:    "deepseek/deepseek-r1:free", 
         Messages: []Message{
             {Role: "user", Content: prompt},
         },
+        Temperature: 0.7,
+        MaxTokens:   1000,
     }
 
     jsonData, err := json.Marshal(request)
@@ -67,7 +65,7 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
         return "", fmt.Errorf("error marshaling request: %w", err)
     }
 
-    log.Printf("Sending request to OpenAI: %s", string(jsonData))
+    log.Printf("Sending request to OpenRouter: %s", string(jsonData))
 
     req, err := http.NewRequest("POST", s.baseURL, bytes.NewBuffer(jsonData))
     if err != nil {
@@ -76,6 +74,7 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
 
     req.Header.Set("Content-Type", "application/json")
     req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", s.apiKey))
+    req.Header.Set("X-Title", "TaskAssistant")
 
     client := &http.Client{}
     resp, err := client.Do(req)
@@ -84,16 +83,21 @@ func (s *AIService) GenerateResponse(prompt string) (string, error) {
     }
     defer resp.Body.Close()
 
+    body, _ := io.ReadAll(resp.Body)
+    log.Printf("Raw response from OpenRouter: %s", string(body))
+
     if resp.StatusCode != http.StatusOK {
         var errorResponse OpenAIErrorResponse
-        if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
-            return "", fmt.Errorf("OpenAI API error, status code: %d", resp.StatusCode)
+        if err := json.Unmarshal(body, &errorResponse); err != nil {
+            return "", fmt.Errorf("OpenRouter API error, status code: %d, response: %s", 
+                resp.StatusCode, string(body))
         }
-        return "", fmt.Errorf("OpenAI API error: %s", errorResponse.Error.Message)
+        return "", fmt.Errorf("OpenRouter API error [%d]: %s", 
+            errorResponse.Error.Code, errorResponse.Error.Message)
     }
 
     var response OpenAIResponse
-    if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+    if err := json.Unmarshal(body, &response); err != nil {
         return "", fmt.Errorf("error decoding response: %w", err)
     }
 
