@@ -106,9 +106,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem('token');
             delete axios.defaults.headers.common['Authorization'];
             setUser(null);
-            router.push('/login');
+            router.push('/'); // Redirect to home page instead of login
         }
     };
+  
 
     return (
         <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>

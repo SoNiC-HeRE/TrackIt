@@ -62,15 +62,15 @@ const StatCard = ({ title, value, icon: Icon, color }: {
 );
 
 export default function Dashboard() {
-    
-    const { user, isLoading: isAuthLoading } = useAuth();
+
+    const { logout ,user, isLoading: isAuthLoading } = useAuth();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedFilter, setSelectedFilter] = useState('all');
     const [statistics, setStatistics] = useState<Statistics>(initialStatistics);
 
-    
+
     useEffect(() => {
         if (!isAuthLoading && user) {
             fetchTasks();
@@ -79,10 +79,10 @@ export default function Dashboard() {
         }
     }, [isAuthLoading, user]);
 
-    
+
     useEffect(() => {
         if (!tasks) return;
-        
+
         const stats = tasks.reduce(
             (acc, task) => {
                 acc.total++;
@@ -109,7 +109,7 @@ export default function Dashboard() {
             setIsLoading(true);
             const response = await taskApi.getTasks();
             console.log("API Response:", response); // Debug log
-            setTasks(Array.isArray(response?.tasks) ? response.tasks : []); 
+            setTasks(Array.isArray(response?.tasks) ? response.tasks : []);
         } catch (error) {
             console.error('Error fetching tasks:', error);
             toast.error('Failed to fetch tasks');
@@ -119,7 +119,7 @@ export default function Dashboard() {
         }
     };
 
-  
+
 
     const handleCreateTask = async (taskData: Partial<Task>) => {
         try {
@@ -188,15 +188,44 @@ export default function Dashboard() {
                                 Welcome back, {user.email}
                             </p>
                         </div>
-                        <button
-                            onClick={() => setIsCreateModalOpen(true)}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
-                        >
-                            <PlusIcon className="h-5 w-5" />
-                            <span>Create Task</span>
-                        </button>
-                    </div>                 
-                     
+                        <div className='flex flex-col items-center gap-4'>
+                        <span><button
+                                className="bg-white text-center w-36 rounded-2xl h-14 relative text-black text-xl font-semibold group"
+                                type="button"
+                                onClick={logout}
+                            >
+                                <div
+                                    className="bg-red-500 rounded-xl h-12 w-1/4 flex items-center justify-center absolute left-0 top-[4px] group-hover:w-[144px] z-10 duration-500"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 1024 1024"
+                                        height="25px"
+                                        width="25px"
+                                    >
+                                        <path
+                                            d="M224 480h640a32 32 0 1 1 0 64H224a32 32 0 0 1 0-64z"
+                                            fill="#000000"
+                                        ></path>
+                                        <path
+                                            d="m237.248 512 265.408 265.344a32 32 0 0 1-45.312 45.312l-288-288a32 32 0 0 1 0-45.312l288-288a32 32 0 1 1 45.312 45.312L237.248 512z"
+                                            fill="#000000"
+                                        ></path>
+                                    </svg>
+                                </div>
+                                <p className="translate-x-2">Logout</p>
+                            </button></span>
+                            <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                            >
+                                <PlusIcon className="h-5 w-5" />
+                                <span>Create Task</span>
+
+                            </button>                            
+                        </div>
+                    </div>
+
                     <div className="bg-white rounded-xl shadow-sm p-6">
 
                         {isLoading ? (
@@ -218,25 +247,25 @@ export default function Dashboard() {
                         ) : (
 
                             <KanbanBoard
-                            tasks={filteredTasks}
-                            onUpdateTask={handleUpdateTask}
-                            onDeleteTask={handleDeleteTask}
-                          />
+                                tasks={filteredTasks}
+                                onUpdateTask={handleUpdateTask}
+                                onDeleteTask={handleDeleteTask}
+                            />
                         )}
                     </div>
                 </motion.div>
 
-               
+
                 <AIChat />
 
-               
+
                 <AnimatePresence>
                     {isCreateModalOpen && (
-                      <CreateTaskModal
-                      isOpen={isCreateModalOpen}
-                      onClose={() => setIsCreateModalOpen(false)}
-                      onCreateTask={handleCreateTask}
-                  />
+                        <CreateTaskModal
+                            isOpen={isCreateModalOpen}
+                            onClose={() => setIsCreateModalOpen(false)}
+                            onCreateTask={handleCreateTask}
+                        />
                     )}
                 </AnimatePresence>
             </main>
