@@ -5,6 +5,8 @@ import (
     "log"
     "os"
     "time"
+    "reflect"
+    "strings"
 
     "github.com/gin-gonic/gin"
     "go.mongodb.org/mongo-driver/bson"
@@ -55,16 +57,35 @@ func GetTasks(c *gin.Context) {
 // UpdateTask modifies an existing task
 func UpdateTask(c *gin.Context) {
     taskID, _ := primitive.ObjectIDFromHex(c.Param("id"))
-    var updateData models.Task
+    var updateData map[string]interface{}
 
     if err := c.ShouldBindJSON(&updateData); err != nil {
         respondWithError(c, 400, "Invalid request payload", err)
         return
     }
 
-    updateData.UpdatedAt = time.Now()
+    // Translate JSON field names to BSON using model tags
+    jsonToBSON := getJSONToBSONMap(models.Task{})
+    bsonUpdateData := make(bson.M)
 
-    if modifiedCount, err := updateTask(taskID, updateData); err != nil {
+    for jsonKey, value := range updateData {
+        bsonKey, ok := jsonToBSON[jsonKey]
+        if !ok {
+            // Skip fields not present in the model
+            continue
+        }
+        bsonUpdateData[bsonKey] = value
+    }
+
+    // Remove non-updatable fields
+    delete(bsonUpdateData, "_id")
+    delete(bsonUpdateData, "created_by")
+    delete(bsonUpdateData, "created_at")
+
+    // Set updated_at to current time
+    bsonUpdateData["updated_at"] = time.Now()
+
+    if modifiedCount, err := updateTask(taskID, bsonUpdateData); err != nil {
         respondWithError(c, 500, "Failed to update task", err)
         return
     } else if modifiedCount == 0 {
@@ -121,7 +142,25 @@ func fetchUserTasks(userID primitive.ObjectID) ([]models.Task, error) {
 }
 
 // Update a task in the database
-func updateTask(taskID primitive.ObjectID, updateData models.Task) (int64, error) {
+func getJSONToBSONMap(model interface{}) map[string]string {
+    result := make(map[string]string)
+    t := reflect.TypeOf(model)
+    for i := 0; i < t.NumField(); i++ {
+        field := t.Field(i)
+        jsonTag := field.Tag.Get("json")
+        bsonTag := field.Tag.Get("bson")
+        if jsonTag == "" || bsonTag == "" {
+            continue
+        }
+        jsonName := strings.Split(jsonTag, ",")[0]
+        bsonName := strings.Split(bsonTag, ",")[0]
+        result[jsonName] = bsonName
+    }
+    return result
+}
+
+// Update a task in the database using bson.M
+func updateTask(taskID primitive.ObjectID, updateData bson.M) (int64, error) {
     collection := database.Client.Database("data_trackit").Collection("tasks")
     result, err := collection.UpdateOne(
         context.Background(),

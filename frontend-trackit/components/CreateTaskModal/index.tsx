@@ -24,15 +24,15 @@ export default function CreateTaskModal({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
+    
         try {
             const taskData: Partial<Task> = {
                 title,
                 description,
-                
+                priority, // Ensure priority is included
                 status: 'todo'
             };
-
+    
             await onCreateTask(taskData);
             resetForm();
             onClose();
@@ -44,6 +44,7 @@ export default function CreateTaskModal({
             setIsSubmitting(false);
         }
     };
+   
 
     const resetForm = () => {
         setTitle('');

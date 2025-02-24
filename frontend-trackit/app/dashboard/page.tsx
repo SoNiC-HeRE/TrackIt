@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { taskApi } from '@/services/api';
-import TaskList from '@/components/TaskList';
 import Sidebar from '@/components/SideBar';
 import AIChat from '@/components/AIChat';
 import CreateTaskModal from '@/components/CreateTaskModal';
@@ -20,6 +19,7 @@ import {
     ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import KanbanBoard from '@/components/KanbanBoard/KanbanBoard';
 
 
 
@@ -195,53 +195,9 @@ export default function Dashboard() {
                             <PlusIcon className="h-5 w-5" />
                             <span>Create Task</span>
                         </button>
-                    </div>
-
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                        <StatCard
-                            title="Total Tasks"
-                            value={statistics.total}
-                            icon={ChartBarIcon}
-                            color="bg-blue-500"
-                        />
-                        <StatCard
-                            title="In Progress"
-                            value={statistics.inProgress}
-                            icon={ClockIcon}
-                            color="bg-yellow-500"
-                        />
-                        <StatCard
-                            title="Completed"
-                            value={statistics.completed}
-                            icon={CheckCircleIcon}
-                            color="bg-green-500"
-                        />
-                        <StatCard
-                            title="Todo"
-                            value={statistics.todo}
-                            icon={ChartPieIcon}
-                            color="bg-red-500"
-                        />
-                    </div>
-
-                    
+                    </div>                 
+                     
                     <div className="bg-white rounded-xl shadow-sm p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-semibold text-gray-900">Tasks</h2>
-                            <div className="flex space-x-2">
-                                <select
-                                    value={selectedFilter}
-                                    onChange={(e) => setSelectedFilter(e.target.value)}
-                                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="all">All Tasks</option>
-                                    <option value="todo">Todo</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                </select>
-                            </div>
-                        </div>
 
                         {isLoading ? (
                             <div className="flex justify-center items-center h-64">
@@ -260,11 +216,12 @@ export default function Dashboard() {
                                 </p>
                             </div>
                         ) : (
-                            <TaskList
-    tasks={filteredTasks}
-    onUpdateTask={handleUpdateTask}
-    onDeleteTask={handleDeleteTask}
-/>
+
+                            <KanbanBoard
+                            tasks={filteredTasks}
+                            onUpdateTask={handleUpdateTask}
+                            onDeleteTask={handleDeleteTask}
+                          />
                         )}
                     </div>
                 </motion.div>

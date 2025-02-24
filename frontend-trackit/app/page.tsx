@@ -10,7 +10,7 @@ export default function Home() {
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold">TaskAI</span>
+            <span className="text-xl font-bold">TrackIt</span>
           </div>
           <nav className="hidden md:flex gap-6">
             <Link className="text-sm font-medium hover:text-blue-600" href="#">
@@ -155,7 +155,7 @@ export default function Home() {
                 Ready to transform your task management?
               </h2>
               <p className="text-muted-foreground md:text-xl">
-                Join thousands of teams already using TaskAI to streamline their workflow and boost productivity.
+                Join thousands of teams already using TrackIt to streamline their workflow and boost productivity.
               </p>
               <div className="flex justify-center gap-4">
                 <Link href="/register">
@@ -177,9 +177,9 @@ export default function Home() {
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-2">
             <Bot className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-semibold">TaskAI</span>
+            <span className="text-sm font-semibold">TrackIt</span>
           </div>
-          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} TaskAI. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} TrackIt. All rights reserved.</p>
         </div>
       </footer>
     </div>
